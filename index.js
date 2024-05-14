@@ -2,6 +2,11 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
+const gameOverDisplay = document.getElementById("gameOverDisplay");
+const scores = document.getElementById("scores");
+const gameOverScore = document.getElementById("score");
+let score = 0;
+
 //create renderer
 let renderer = new THREE.WebGLRenderer({ antialize: true, alpha: true });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -181,9 +186,15 @@ function animate() {
   playerControl();
   cube.update(ground);
   controls.update();
-  enemies.forEach((enemy) => {
+  enemies.forEach((enemy, index) => {
+    if (enemy.back >= ground.front) {
+      enemies.splice(index, 1);
+      score++;
+    }
+
     enemy.update(ground);
     if (boxCollision({ box1: cube, box2: enemy })) {
+      gameOverDisplay.classList.add("active");
       cancelAnimationFrame(animationId);
     }
   });
@@ -213,6 +224,9 @@ function animate() {
     enemies.push(enemy);
   }
   frames++;
+  console.log(score);
+  scores.innerHTML = score;
+  gameOverScore.innerHTML = score;
 }
 animate();
 
@@ -255,7 +269,7 @@ window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() == "s") {
     keys.s.pressed = true;
   }
-  if (e.key === "ArrowUp") {
+  if (e.key === "ArrowUp" && cube.position.y < 0.001) {
     cube.velocity.y = 0.1;
   }
 });
